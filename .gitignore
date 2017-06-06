@@ -1,0 +1,7 @@
+word2vec/data
+word2vec/ltp_data
+word2vec/.ipynb_checkpoints
+data
+output/*
+*.npy
+*.out

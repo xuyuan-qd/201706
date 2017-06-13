@@ -18,7 +18,7 @@ def translate():
     fin = open("./data/C_train_Q.json")
     jin = json.load(fin)
 
-    fout = open("./data/C_train_Q_split.data", "wb")
+    fout = open("./data/C_train_Q_split.dat", "wb")
     for item in jin["questions"]:
         cPickle.dump(item, fout, protocol=cPickle.HIGHEST_PROTOCOL)
 
@@ -27,9 +27,9 @@ def translate():
 
 
 def to_vec():
-    fin = open("./data/C_train_Q_split.data", "rb")
+    fin = open("./data/C_train_Q_split.dat", "rb")
 
-    fout = open("./data/C_train_Q_split_vec.data", "wb")
+    fout = open("./data/C_train_Q_split_vec.dat", "wb")
 
     while True:
         try:

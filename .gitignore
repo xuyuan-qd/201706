@@ -6,5 +6,6 @@ output/*
 *.npy
 *.out
 *.pyc
+*/*.pyc
 .ipynb_checkpoints
 msc

@@ -3,13 +3,15 @@ from __future__ import print_function
 import json
 import numpy as np
 import sys
+import os
 import cPickle
 import random
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import time
 
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 from keras.layers import Activation, Dense
 from keras.layers.recurrent import LSTM
 from keras.utils import plot_model
@@ -26,7 +28,11 @@ def nn():
     model.add(Dense(28, activation="softmax"))
     # model.add(Activation("softmax"))
 
-    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    if os.path.isfile("./output/lstm_resume.h5"):
+        iprint("Found trained model, resume training")
+        model = load_model("./output/lstm_resume.h5")
+
+    model.compile(loss='categorical_crossentropy', optimizer='sgd', metrics=['accuracy'])
 
     return model
 
@@ -124,7 +130,7 @@ def main():
     test_loss = []
     test_acc = []
 
-    for iteration in range(10):
+    for iteration in range(20):
         train_file = open("./data/train.dat", "rb")
         test_file = open("./data/test.dat", "rb")
 
@@ -154,18 +160,24 @@ def main():
         iprint(train_loss, train_acc, test_loss, test_acc)
         plt.figure()
         plt.boxplot(train_loss)
+        plt.title("train_loss")
         plt.savefig("./output/train_loss.png")
         plt.figure()
         plt.boxplot(train_acc)
+        plt.title("train_acc")
         plt.savefig("./output/train_acc.png")
         plt.figure()
         plt.boxplot(test_loss)
+        plt.title("test_loss")
         plt.savefig("./output/test_loss.png")
         plt.figure()
         plt.boxplot(test_acc)
+        plt.title("test_acc")
         plt.savefig("./output/test_acc.png")
 
-        model.save("./output/lstm_iter" + str(iteration) + ".h5")
+        t = time.localtime(time.time())
+        now = str(t[3]) + str(t[4])
+        model.save("./output/lstm_iter" + now + ".h5")
 
         train_file.close()
         test_file.close()

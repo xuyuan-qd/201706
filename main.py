@@ -26,6 +26,8 @@ q_file = open("./data/C_train_Q.json")
 q_json = json.load(q_file)
 i_file = open("./data/img_train_vec.json")
 i_json = json.load(i_file)
+q_file.close()
+i_file.close()
 
 
 def format_x(img_key, sentence):

@@ -5,7 +5,9 @@ import numpy as np
 import sys
 import cPickle
 import random
-# import matplotlab.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from keras.models import Sequential
 from keras.layers import Activation, Dense
@@ -59,10 +61,10 @@ class MyInput(object):
     def __init__(self, size, input_file):
         self.size = size
         self.input_file = input_file
-        self.end = False
+        self.eof = False
 
     def __iter__(self):
-        while not self.end:
+        while not self.eof:
             xs = []
             ys = []
 
@@ -70,7 +72,7 @@ class MyInput(object):
                 try:
                     item = cPickle.load(self.input_file)
                 except EOFError:
-                    self.end = True
+                    self.eof = True
                     break
 
                 img_key = item["image_filename"]
@@ -101,11 +103,12 @@ class MyInput(object):
                 answer = item["vec_answer"]
                 ys.append(answer)
 
-            xs = np.array(xs)
-            ys = np.array(ys)
-            iprint("xs vector shape", xs.shape)
-            iprint("ys vector shape", ys.shape)
-            yield xs, ys
+            if not self.eof:
+                xs = np.array(xs)
+                ys = np.array(ys)
+                iprint("xs vector shape", xs.shape)
+                iprint("ys vector shape", ys.shape)
+                yield xs, ys
 
 
 def main():
@@ -113,9 +116,6 @@ def main():
 
     model = nn()
     plot_model(model, to_file="./output/lstm.png", show_shapes=True)
-
-    train_file = open("./data/train.dat", "rb")
-    test_file = open("./data/test.dat", "rb")
 
     batch_size = 3200
 
@@ -125,6 +125,9 @@ def main():
     test_acc = []
 
     for iteration in range(10):
+        train_file = open("./data/train.dat", "rb")
+        test_file = open("./data/test.dat", "rb")
+
         train = MyInput(batch_size, train_file)
         test = MyInput(batch_size, test_file)
         loss_l = []
@@ -147,9 +150,25 @@ def main():
         test_loss.append(loss_l)
         test_acc.append(acc_l)
 
-    iprint(train_loss, train_acc, test_loss, test_acc)
-    # plt.figure()
-    # plt.boxplot(train_loss)
+        iprint("iteration", iteration)
+        iprint(train_loss, train_acc, test_loss, test_acc)
+        plt.figure()
+        plt.boxplot(train_loss)
+        plt.savefig("./output/train_loss.png")
+        plt.figure()
+        plt.boxplot(train_acc)
+        plt.savefig("./output/train_acc.png")
+        plt.figure()
+        plt.boxplot(test_loss)
+        plt.savefig("./output/test_loss.png")
+        plt.figure()
+        plt.boxplot(test_acc)
+        plt.savefig("./output/test_acc.png")
+
+        model.save("./output/lstm_iter" + str(iteration) + ".h5")
+
+        train_file.close()
+        test_file.close()
 
     # for batch in range(train_batch_start, train_batch_end):
         # xs, ys = format_input(batch_size, train_file)
